@@ -1,0 +1,27 @@
+name: 'BlitzHash Secret Guard'
+description: 'Scan the full git history for leaked keys (Gitleaks + Supabase rules) and post a plain-English report with rotation steps.'
+author: 'BlitzHash'
+branding:
+  icon: 'shield'
+  color: 'red'
+inputs:
+  path:
+    description: 'Folder to scan (use actions/checkout with fetch-depth: 0 for full history)'
+    required: false
+    default: '.'
+  fail:
+    description: 'Fail the job when a secret is found'
+    required: false
+    default: 'true'
+runs:
+  using: 'composite'
+  steps:
+    - name: Secret Guard scan
+      shell: bash
+      env:
+        SG_PATH: ${{ inputs.path }}
+        SG_FAIL: ${{ inputs.fail }}
+      run: |
+        args=(scan "$SG_PATH" --summary "$GITHUB_STEP_SUMMARY")
+        if [ "$SG_FAIL" != "true" ]; then args+=(--no-fail); fi
+        node "$GITHUB_ACTION_PATH/bin/secret-guard.mjs" "${args[@]}"

@@ -1,0 +1,19 @@
+{
+  "name": "blitzhash-secret-guard",
+  "version": "1.0.0",
+  "description": "Find leaked API keys in your whole git history (even deleted ones), get per-provider rotation steps, a safe history cleanup plan, a pre-commit hook and a GitHub Action. Built on Gitleaks.",
+  "type": "module",
+  "bin": { "secret-guard": "bin/secret-guard.mjs" },
+  "engines": { "node": ">=18.17" },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "demo": "node bin/secret-guard.mjs demo"
+  },
+  "files": ["bin", "src", "skills", "docs", "action.yml", "README.md", "LICENSE"],
+  "keywords": ["secrets", "secret-scanning", "gitleaks", "git-history", "pre-commit", "github-action", "supabase", "vibe-coding", "lovable", "agent-skills"],
+  "author": "BlitzHash (https://blitzhash.com)",
+  "license": "MIT",
+  "homepage": "https://blitzhash.com",
+  "repository": { "type": "git", "url": "git+https://github.com/blitzhash360-web/blitzhash-secret-guard.git" },
+  "bugs": { "url": "https://github.com/blitzhash360-web/blitzhash-secret-guard/issues" }
+}

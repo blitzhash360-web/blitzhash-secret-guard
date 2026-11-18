@@ -1,0 +1,49 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: git config --global user.email ci@example.com && git config --global user.name CI
+      - run: npm test
+      - name: Demo finds the planted (fake) keys, including the deleted one
+        run: |
+          node bin/secret-guard.mjs demo > demo.md
+          grep -q "1 still in your current code, 1 deleted but still in git history" demo.md
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: This repo's own history is clean (runs the action itself)
+        uses: ./
+      - name: Create a fixture repo with a planted FAKE key (generated at runtime, then deleted from the code)
+        run: |
+          d="$RUNNER_TEMP/planted"; mkdir -p "$d"; cd "$d"
+          git init -q -b main && git config user.email ci@example.com && git config user.name CI
+          echo "SUPABASE_SECRET_KEY=sb_secret_$(head -c 60 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 40)" > .env
+          git add .env && git commit -qm "oops"
+          git rm -q .env && git commit -qm "remove .env"
+      - name: Planted secret in history makes the action fail
+        id: planted
+        continue-on-error: true
+        uses: ./
+        with:
+          path: ${{ runner.temp }}/planted
+      - name: Assert the planted-secret scan failed
+        run: test "${{ steps.planted.outcome }}" = "failure"
